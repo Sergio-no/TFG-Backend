@@ -1,4 +1,4 @@
-package org.example.tfgbackendpruebas.config;
+package org.example.tfgbackend.config;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
