@@ -19,12 +19,7 @@ public class FirebaseConfig {
     @PostConstruct
     public void initFirebase() throws IOException {
         System.out.println("=== INICIANDO FIREBASE ===");
-        System.out.println("Recurso: " + firebaseCredentials);
         System.out.println("¿Existe?: " + firebaseCredentials.exists());
-
-        if (!firebaseCredentials.exists()) {
-            throw new RuntimeException("¡¡¡ NO EXISTE firebase-service-account.json !!!");
-        }
 
         if (FirebaseApp.getApps().isEmpty()) {
             FirebaseOptions options = FirebaseOptions.builder()
@@ -32,9 +27,7 @@ public class FirebaseConfig {
                             firebaseCredentials.getInputStream()))
                     .build();
             FirebaseApp.initializeApp(options);
-            System.out.println("=== FIREBASE INICIADO CORRECTAMENTE ===");
-        } else {
-            System.out.println("=== FIREBASE YA ESTABA INICIADO ===");
+            System.out.println("=== FIREBASE OK ===");
         }
     }
 }

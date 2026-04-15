@@ -4,10 +4,7 @@ import org.example.tfgbackend.dto.response.ClienteResponse;
 import org.example.tfgbackend.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,5 +22,11 @@ public class ClienteController {
     @GetMapping("/{id}")
     public ResponseEntity<ClienteResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(clienteService.getById(id));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ClienteResponse> getMiCliente(
+            @RequestHeader("X-Firebase-UID") String firebaseUid) {
+        return ResponseEntity.ok(clienteService.getByFirebaseUid(firebaseUid));
     }
 }
