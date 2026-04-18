@@ -25,6 +25,12 @@ public class FacturaController {
         return ResponseEntity.ok(facturaService.getById(id));
     }
 
+    /** Facturas de un cliente concreto (usado por Android) */
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<FacturaResponse>> getByCliente(@PathVariable Long clienteId) {
+        return ResponseEntity.ok(facturaService.getByCliente(clienteId));
+    }
+
     @PostMapping("/reparacion/{reparacionId}")
     public ResponseEntity<FacturaResponse> generar(
             @PathVariable Long reparacionId,

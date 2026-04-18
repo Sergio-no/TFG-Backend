@@ -3,6 +3,7 @@ package org.example.tfgbackend.service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import org.example.tfgbackend.dto.request.RegisterRequest;
+import org.example.tfgbackend.dto.request.UpdateProfileRequest;
 import org.example.tfgbackend.dto.response.UsuarioResponse;
 import org.example.tfgbackend.exception.ResourceNotFoundException;
 import org.example.tfgbackend.model.Cliente;
@@ -53,6 +54,20 @@ public class UsuarioService {
         } catch (FirebaseAuthException e) {
             System.err.println("Error fijando custom claim: " + e.getMessage());
         }
+
+        return UsuarioMapper.toResponse(u);
+    }
+
+    /** Actualizar nombre, apellidos y teléfono */
+    @Transactional
+    public UsuarioResponse updateProfile(String firebaseUid, UpdateProfileRequest req) {
+        Usuario u = usuarioRepo.findByFirebaseUid(firebaseUid)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+
+        u.setNombre(req.getNombre());
+        u.setApellidos(req.getApellidos());
+        u.setTelefono(req.getTelefono());
+        u = usuarioRepo.save(u);
 
         return UsuarioMapper.toResponse(u);
     }

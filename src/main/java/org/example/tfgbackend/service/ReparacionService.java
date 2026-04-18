@@ -38,6 +38,12 @@ public class ReparacionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Reparación no encontrada")));
     }
 
+    /** Reparaciones filtradas por clienteId (seguro, sin filtrar por nombre) */
+    public List<ReparacionResponse> getByCliente(Long clienteId) {
+        return reparacionRepo.findByVehiculoClienteId(clienteId).stream()
+                .map(ReparacionMapper::toResponse).toList();
+    }
+
     @Transactional
     public ReparacionResponse crear(ReparacionRequest req) {
         Vehiculo  v = vehiculoRepo.findById(req.getVehiculoId())
@@ -77,11 +83,9 @@ public class ReparacionService {
         if (p.getStockActual() < req.getCantidadUsada())
             throw new IllegalArgumentException("Stock insuficiente");
 
-        // Descontar stock
         p.setStockActual(p.getStockActual() - req.getCantidadUsada());
         piezaRepo.save(p);
 
-        // Registrar uso
         ReparacionPieza rp = new ReparacionPieza();
         rp.setReparacion(r);
         rp.setPieza(p);
@@ -89,7 +93,6 @@ public class ReparacionService {
         rp.setPrecioMomento(p.getPrecioUnitario());
         repPiezaRepo.save(rp);
 
-        // Actualizar coste total
         BigDecimal incremento = p.getPrecioUnitario()
                 .multiply(BigDecimal.valueOf(req.getCantidadUsada()));
         r.setCosteTotal(r.getCosteTotal().add(incremento));

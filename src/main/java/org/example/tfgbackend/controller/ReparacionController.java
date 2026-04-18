@@ -31,6 +31,12 @@ public class ReparacionController {
         return ResponseEntity.ok(reparacionService.getById(id));
     }
 
+    /** Reparaciones de un cliente concreto (usado por Android) */
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<ReparacionResponse>> getByCliente(@PathVariable Long clienteId) {
+        return ResponseEntity.ok(reparacionService.getByCliente(clienteId));
+    }
+
     @PostMapping
     public ResponseEntity<ReparacionResponse> crear(
             @Valid @RequestBody ReparacionRequest req) {
