@@ -32,6 +32,13 @@ public class VehiculoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Vehículo no encontrado")));
     }
 
+    // ── NUEVO: buscar por matrícula ──
+    public VehiculoResponse getByMatricula(String matricula) {
+        return toResponse(vehiculoRepo.findByMatricula(matricula.toUpperCase())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No se encontró vehículo con matrícula: " + matricula)));
+    }
+
     @Transactional
     public VehiculoResponse crear(VehiculoRequest req) {
         Cliente cliente = clienteRepo.findById(req.getClienteId())

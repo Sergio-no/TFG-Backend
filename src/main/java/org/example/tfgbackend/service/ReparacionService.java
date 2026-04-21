@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -22,6 +24,7 @@ public class ReparacionService {
     @Autowired private CitaRepository            citaRepo;
     @Autowired private PiezaRepository           piezaRepo;
     @Autowired private ReparacionPiezaRepository repPiezaRepo;
+    @Autowired private FacturaRepository         facturaRepo;   // NUEVO
 
     public List<ReparacionResponse> getAll() {
         return reparacionRepo.findAll().stream()
@@ -53,7 +56,14 @@ public class ReparacionService {
         r.setCita(cita);
         r.setFechaInicio(LocalDate.now());
         r.setEstado("EN_PROCESO");
-        r.setCosteTotal(BigDecimal.ZERO);
+
+        // NUEVO: usar costeInicial si se proporciona
+        if (req.getCosteInicial() != null && req.getCosteInicial().compareTo(BigDecimal.ZERO) > 0) {
+            r.setCosteTotal(req.getCosteInicial());
+        } else {
+            r.setCosteTotal(BigDecimal.ZERO);
+        }
+
         return ReparacionMapper.toResponse(reparacionRepo.save(r));
     }
 
@@ -64,7 +74,39 @@ public class ReparacionService {
         r.setEstado(estado);
         if ("TERMINADA".equals(estado) || "CONFIRMADA".equals(estado))
             r.setFechaFin(LocalDate.now());
-        return ReparacionMapper.toResponse(reparacionRepo.save(r));
+
+        r = reparacionRepo.save(r);
+
+        // ── NUEVO: auto-crear factura al confirmar ──
+        if ("CONFIRMADA".equals(estado)) {
+            crearFacturaAutomatica(r);
+        }
+
+        return ReparacionMapper.toResponse(r);
+    }
+
+    /**
+     * Crea una factura automáticamente para la reparación confirmada,
+     * siempre y cuando no exista ya una factura para esa reparación.
+     */
+    private void crearFacturaAutomatica(Reparacion r) {
+        boolean yaExiste = facturaRepo.findAll().stream()
+                .anyMatch(f -> f.getReparacion().getId().equals(r.getId()));
+
+        if (yaExiste) return;
+
+        String numero = "FAC-" + LocalDateTime.now().format(
+                DateTimeFormatter.ofPattern("yyyy-MM")) + "-" +
+                String.format("%04d", facturaRepo.count() + 1);
+
+        Factura f = new Factura();
+        f.setCliente(r.getVehiculo().getCliente());
+        f.setReparacion(r);
+        f.setTotal(r.getCosteTotal());
+        f.setNumeroFactura(numero);
+        f.setPagada(false);
+        // oficina queda null — se puede asignar al pagar
+        facturaRepo.save(f);
     }
 
     @Transactional

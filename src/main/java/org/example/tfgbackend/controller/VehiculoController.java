@@ -31,6 +31,12 @@ public class VehiculoController {
         return ResponseEntity.ok(vehiculoService.getByCliente(clienteId));
     }
 
+    // ── NUEVO: buscar por matrícula ──
+    @GetMapping("/matricula/{matricula}")
+    public ResponseEntity<VehiculoResponse> getByMatricula(@PathVariable String matricula) {
+        return ResponseEntity.ok(vehiculoService.getByMatricula(matricula));
+    }
+
     @PostMapping
     public ResponseEntity<VehiculoResponse> crear(@Valid @RequestBody VehiculoRequest req) {
         return ResponseEntity.ok(vehiculoService.crear(req));
