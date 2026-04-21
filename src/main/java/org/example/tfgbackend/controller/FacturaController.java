@@ -3,6 +3,7 @@ package org.example.tfgbackend.controller;
 import org.example.tfgbackend.dto.request.PagoRequest;
 import org.example.tfgbackend.dto.response.FacturaResponse;
 import org.example.tfgbackend.service.FacturaService;
+import org.example.tfgbackend.util.FacturaMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,4 +45,5 @@ public class FacturaController {
             @RequestBody PagoRequest req) {
         return ResponseEntity.ok(facturaService.marcarPagada(id, req));
     }
+
 }
