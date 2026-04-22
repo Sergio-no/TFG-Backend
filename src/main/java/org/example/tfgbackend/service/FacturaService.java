@@ -62,6 +62,12 @@ public class FacturaService {
         return FacturaMapper.toResponse(facturaRepo.save(f));
     }
 
+    public List<FacturaResponse> getByClienteId(Long clienteId) {
+        return facturaRepo.findByClienteId(clienteId).stream()
+                .map(FacturaMapper::toResponse).toList();
+    }
+
+
     @Transactional
     public FacturaResponse marcarPagada(Long id, PagoRequest req) {
         Factura f = facturaRepo.findById(id)

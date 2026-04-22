@@ -120,7 +120,7 @@ public class PagoService {
 
         // Marcar como pagada
         factura.setPagada(true);
-        factura.setMetodoPago("STRIPE");
+        factura.setMetodoPago("ONLINE");
         factura.setFechaPago(LocalDateTime.now());
         factura = facturaRepo.save(factura);
 
