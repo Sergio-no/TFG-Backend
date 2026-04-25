@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 @Data
 public class CitaRequest {
     @NotNull private Long clienteId;
-    @NotNull private Long vehiculoId;
+    private Long vehiculoId;         // Opcional si se usa matrícula
+    private String matricula;        // NUEVO: alternativa al vehiculoId
     @NotNull private LocalDateTime fecha;
     private String descripcion;
 
@@ -20,12 +21,20 @@ public class CitaRequest {
         this.clienteId = clienteId;
     }
 
-    public @NotNull Long getVehiculoId() {
+    public Long getVehiculoId() {
         return vehiculoId;
     }
 
-    public void setVehiculoId(@NotNull Long vehiculoId) {
+    public void setVehiculoId(Long vehiculoId) {
         this.vehiculoId = vehiculoId;
+    }
+
+    public String getMatricula() {
+        return matricula;
+    }
+
+    public void setMatricula(String matricula) {
+        this.matricula = matricula;
     }
 
     public @NotNull LocalDateTime getFecha() {
