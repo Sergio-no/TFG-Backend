@@ -31,6 +31,12 @@ public class FacturaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Factura no encontrada")));
     }
 
+    /** Facturas filtradas por clienteId (seguro) */
+    public List<FacturaResponse> getByCliente(Long clienteId) {
+        return facturaRepo.findByClienteId(clienteId).stream()
+                .map(FacturaMapper::toResponse).toList();
+    }
+
     @Transactional
     public FacturaResponse generarDesdeReparacion(Long reparacionId, String firebaseUid) {
         Reparacion r = reparacionRepo.findById(reparacionId)
@@ -55,6 +61,12 @@ public class FacturaService {
         f.setPagada(false);
         return FacturaMapper.toResponse(facturaRepo.save(f));
     }
+
+    public List<FacturaResponse> getByClienteId(Long clienteId) {
+        return facturaRepo.findByClienteId(clienteId).stream()
+                .map(FacturaMapper::toResponse).toList();
+    }
+
 
     @Transactional
     public FacturaResponse marcarPagada(Long id, PagoRequest req) {

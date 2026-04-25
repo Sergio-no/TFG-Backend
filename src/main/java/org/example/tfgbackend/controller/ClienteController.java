@@ -1,7 +1,5 @@
 package org.example.tfgbackend.controller;
 
-import jakarta.validation.Valid;
-import org.example.tfgbackend.dto.request.ClienteRequest;
 import org.example.tfgbackend.dto.response.ClienteResponse;
 import org.example.tfgbackend.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,21 +24,9 @@ public class ClienteController {
         return ResponseEntity.ok(clienteService.getById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<ClienteResponse> crear(@Valid @RequestBody ClienteRequest req) {
-        return ResponseEntity.ok(clienteService.crear(req));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<ClienteResponse> actualizar(
-            @PathVariable Long id,
-            @Valid @RequestBody ClienteRequest req) {
-        return ResponseEntity.ok(clienteService.actualizar(id, req));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        clienteService.eliminar(id);
-        return ResponseEntity.noContent().build();
+    @GetMapping("/me")
+    public ResponseEntity<ClienteResponse> getMiCliente(
+            @RequestHeader("X-Firebase-UID") String firebaseUid) {
+        return ResponseEntity.ok(clienteService.getByFirebaseUid(firebaseUid));
     }
 }

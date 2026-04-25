@@ -23,6 +23,10 @@ public class Cliente {
     @Column(name = "fecha_registro", nullable = false)
     private LocalDateTime fechaRegistro = LocalDateTime.now();
 
+    // ── Stripe ──
+    @Column(name = "stripe_customer_id")
+    private String stripeCustomerId;
+
     public Cliente() {}
 
     public Long getId() { return id; }
@@ -35,4 +39,6 @@ public class Cliente {
     public void setTotalGastado(BigDecimal t) { this.totalGastado = t; }
     public LocalDateTime getFechaRegistro() { return fechaRegistro; }
     public void setFechaRegistro(LocalDateTime f) { this.fechaRegistro = f; }
+    public String getStripeCustomerId() { return stripeCustomerId; }
+    public void setStripeCustomerId(String s) { this.stripeCustomerId = s; }
 }
