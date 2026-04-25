@@ -13,7 +13,7 @@ public interface ReparacionRepository extends JpaRepository<Reparacion, Long> {
 
     List<Reparacion> findByMecanicoId(Long mecanicoId);
 
-    @Query("SELECT r FROM Reparacion r WHERE r.estado IN ('EN_PROCESO','TERMINADA')")
+    @Query("SELECT r FROM Reparacion r WHERE r.estado IN ('PRESENTADA','EN_PROCESO','TERMINADA')")
     List<Reparacion> findActivas();
 
     @Query("SELECT COUNT(r) FROM Reparacion r WHERE r.estado = 'EN_PROCESO'")

@@ -61,7 +61,7 @@ public class ReparacionService {
         r.setMecanico(m);
         r.setCita(cita);
         r.setFechaInicio(LocalDate.now());
-        r.setEstado("EN_PROCESO");
+        r.setEstado("PRESENTADA");
 
         // NUEVO: usar costeInicial si se proporciona
         if (req.getCosteInicial() != null && req.getCosteInicial().compareTo(BigDecimal.ZERO) > 0) {
@@ -77,18 +77,27 @@ public class ReparacionService {
     public ReparacionResponse cambiarEstado(Long id, String estado) {
         Reparacion r = reparacionRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reparación no encontrada"));
-        r.setEstado(estado);
-        if ("TERMINADA".equals(estado) || "CONFIRMADA".equals(estado))
-            r.setFechaFin(LocalDate.now());
 
-        r = reparacionRepo.save(r);
+        // Validar transiciones permitidas
+        String actual = r.getEstado();
+        boolean valido = switch (estado) {
+            case "EN_PROCESO" -> "PRESENTADA".equals(actual);   // Cliente acepta
+            case "RECHAZADA"  -> "PRESENTADA".equals(actual);   // Cliente rechaza
+            case "TERMINADA"  -> "EN_PROCESO".equals(actual);   // Taller termina
+            case "CONFIRMADA" -> "TERMINADA".equals(actual);    // Taller confirma
+            default -> false;
+        };
 
-        // ── NUEVO: auto-crear factura al confirmar ──
-        if ("CONFIRMADA".equals(estado)) {
-            crearFacturaAutomatica(r);
+        if (!valido) {
+            throw new IllegalStateException(
+                    "No se puede pasar de " + actual + " a " + estado);
         }
 
-        return ReparacionMapper.toResponse(r);
+        r.setEstado(estado);
+        if ("TERMINADA".equals(estado) || "CONFIRMADA".equals(estado) || "RECHAZADA".equals(estado)) {
+            r.setFechaFin(LocalDate.now());
+        }
+        return ReparacionMapper.toResponse(reparacionRepo.save(r));
     }
 
     /**

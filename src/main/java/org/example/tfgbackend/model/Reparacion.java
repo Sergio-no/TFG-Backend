@@ -27,7 +27,7 @@ public class Reparacion {
     private LocalDate fechaFin;
 
     @Column(nullable = false)
-    private String estado = "EN_PROCESO";
+    private String estado = "PRESENTADA";
 
     @Column(name = "coste_total", nullable = false)
     private BigDecimal costeTotal = BigDecimal.ZERO;
