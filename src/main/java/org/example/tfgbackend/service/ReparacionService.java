@@ -97,7 +97,14 @@ public class ReparacionService {
         if ("TERMINADA".equals(estado) || "CONFIRMADA".equals(estado) || "RECHAZADA".equals(estado)) {
             r.setFechaFin(LocalDate.now());
         }
-        return ReparacionMapper.toResponse(reparacionRepo.save(r));
+        r = reparacionRepo.save(r);
+
+        // Generar factura automáticamente al confirmar
+        if ("CONFIRMADA".equals(estado)) {
+            crearFacturaAutomatica(r);
+        }
+
+        return ReparacionMapper.toResponse(r);
     }
 
     /**
