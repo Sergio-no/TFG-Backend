@@ -18,4 +18,18 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     @Query("SELECT c FROM Cita c WHERE c.fecha BETWEEN :inicio AND :fin " +
             "AND c.estado != 'CANCELADA' ORDER BY c.fecha ASC")
     List<Cita> findCitasHoy(LocalDateTime inicio, LocalDateTime fin);
+
+    /**
+     * Busca citas NO canceladas en un rango de fechas.
+     * Se usa para calcular las horas ocupadas de un día.
+     */
+    @Query("SELECT c FROM Cita c WHERE c.fecha BETWEEN :inicio AND :fin " +
+            "AND c.estado != 'CANCELADA'")
+    List<Cita> findCitasNoCanceladasEntre(LocalDateTime inicio, LocalDateTime fin);
+
+    /**
+     * Comprueba si ya existe una cita (no cancelada) a esa hora exacta.
+     */
+    @Query("SELECT COUNT(c) > 0 FROM Cita c WHERE c.fecha = :fecha AND c.estado != 'CANCELADA'")
+    boolean existsCitaEnHora(LocalDateTime fecha);
 }
