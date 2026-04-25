@@ -5,9 +5,11 @@ import org.example.tfgbackend.dto.request.CitaRequest;
 import org.example.tfgbackend.dto.response.CitaResponse;
 import org.example.tfgbackend.service.CitaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -34,6 +36,16 @@ public class CitaController {
     @GetMapping("/cliente/{clienteId}")
     public ResponseEntity<List<CitaResponse>> getByCliente(@PathVariable Long clienteId) {
         return ResponseEntity.ok(citaService.getByCliente(clienteId));
+    }
+
+    /**
+     * Devuelve las horas disponibles para un día concreto.
+     * Ejemplo: GET /api/citas/horas-disponibles?fecha=2026-04-10
+     */
+    @GetMapping("/horas-disponibles")
+    public ResponseEntity<List<String>> getHorasDisponibles(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        return ResponseEntity.ok(citaService.getHorasDisponibles(fecha));
     }
 
     @PostMapping
