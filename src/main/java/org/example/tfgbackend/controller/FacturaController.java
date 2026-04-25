@@ -2,10 +2,13 @@ package org.example.tfgbackend.controller;
 
 import org.example.tfgbackend.dto.request.PagoRequest;
 import org.example.tfgbackend.dto.response.FacturaResponse;
+import org.example.tfgbackend.exception.ResourceNotFoundException;
+import org.example.tfgbackend.model.Factura;
+import org.example.tfgbackend.repository.FacturaRepository;
+import org.example.tfgbackend.service.FacturaPdfService;
 import org.example.tfgbackend.service.FacturaService;
-import org.example.tfgbackend.util.FacturaMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +18,8 @@ import java.util.List;
 public class FacturaController {
 
     @Autowired private FacturaService facturaService;
+    @Autowired private FacturaPdfService facturaPdfService;
+    @Autowired private FacturaRepository facturaRepo;
 
     @GetMapping
     public ResponseEntity<List<FacturaResponse>> getAll() {
@@ -24,6 +29,27 @@ public class FacturaController {
     @GetMapping("/{id}")
     public ResponseEntity<FacturaResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(facturaService.getById(id));
+    }
+
+    /**
+     * Descarga la factura como PDF.
+     * GET /api/facturas/{id}/pdf
+     */
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<byte[]> descargarPdf(@PathVariable Long id) {
+        Factura factura = facturaRepo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Factura no encontrada"));
+
+        byte[] pdf = facturaPdfService.generarPdf(factura);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(
+                ContentDisposition.attachment()
+                        .filename(factura.getNumeroFactura() + ".pdf")
+                        .build());
+
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 
     @PostMapping("/reparacion/{reparacionId}")
@@ -44,5 +70,4 @@ public class FacturaController {
     public ResponseEntity<List<FacturaResponse>> getByCliente(@PathVariable Long clienteId) {
         return ResponseEntity.ok(facturaService.getByClienteId(clienteId));
     }
-
 }
