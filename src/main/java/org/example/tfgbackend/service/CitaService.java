@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -23,8 +24,11 @@ public class CitaService {
     @Autowired private CitaRepository     citaRepo;
     @Autowired private ClienteRepository  clienteRepo;
     @Autowired private VehiculoRepository vehiculoRepo;
+    @Autowired private NotificationService notificationService;
 
-    /** Todas las franjas horarias posibles: de 9:00 a 17:30 cada 30 min */
+    private static final DateTimeFormatter FMT_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    // Todas las franjas horarias posibles: de 9:00 a 17:30 cada 30 min
     private static final List<LocalTime> TODAS_LAS_HORAS;
     static {
         TODAS_LAS_HORAS = new ArrayList<>();
@@ -57,22 +61,16 @@ public class CitaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada")));
     }
 
-    /**
-     * Devuelve las horas disponibles (formato "HH:mm") para un día concreto.
-     * Excluye las horas que ya tienen una cita NO cancelada.
-     */
     public List<String> getHorasDisponibles(LocalDate fecha) {
         LocalDateTime inicioDia = fecha.atStartOfDay();
         LocalDateTime finDia    = fecha.atTime(23, 59, 59);
 
-        // Obtener horas ya ocupadas
         Set<LocalTime> ocupadas = citaRepo
                 .findCitasNoCanceladasEntre(inicioDia, finDia)
                 .stream()
                 .map(c -> c.getFecha().toLocalTime())
                 .collect(Collectors.toSet());
 
-        // Filtrar las disponibles
         return TODAS_LAS_HORAS.stream()
                 .filter(h -> !ocupadas.contains(h))
                 .map(h -> String.format("%02d:%02d", h.getHour(), h.getMinute()))
@@ -81,10 +79,9 @@ public class CitaService {
 
     @Transactional
     public CitaResponse crear(CitaRequest req) {
-        Cliente  cliente  = clienteRepo.findById(req.getClienteId())
+        Cliente cliente = clienteRepo.findById(req.getClienteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado"));
 
-        // Buscar vehículo: primero por ID, si viene matrícula buscar por matrícula
         Vehiculo vehiculo;
         if (req.getMatricula() != null && !req.getMatricula().isBlank()) {
             vehiculo = vehiculoRepo.findByMatricula(req.getMatricula().toUpperCase())
@@ -95,7 +92,6 @@ public class CitaService {
                     .orElseThrow(() -> new ResourceNotFoundException("Vehículo no encontrado"));
         }
 
-        // Validar que la hora no esté ya ocupada
         if (citaRepo.existsCitaEnHora(req.getFecha())) {
             throw new IllegalArgumentException(
                     "Ya existe una cita a esa hora. Por favor, elige otro horario.");
@@ -115,6 +111,17 @@ public class CitaService {
         Cita cita = citaRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cita no encontrada"));
         cita.setEstado(nuevoEstado);
-        return CitaMapper.toResponse(citaRepo.save(cita));
+        cita = citaRepo.save(cita);
+
+        // Enviar notificación push al cliente
+        try {
+            Usuario clienteUsuario = cita.getCliente().getUsuario();
+            String fechaStr = cita.getFecha().format(FMT_FECHA);
+            notificationService.notificarCitaCambioEstado(clienteUsuario, nuevoEstado, fechaStr);
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación de cita: " + e.getMessage());
+        }
+
+        return CitaMapper.toResponse(cita);
     }
 }

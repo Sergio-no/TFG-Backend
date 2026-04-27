@@ -33,6 +33,9 @@ public class Usuario {
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
     public Usuario() {}
 
     public Long getId() { return id; }
@@ -53,4 +56,6 @@ public class Usuario {
     public void setActivo(boolean activo) { this.activo = activo; }
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime f) { this.fechaCreacion = f; }
+    public String getFcmToken() { return fcmToken; }
+    public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }
 }

@@ -24,7 +24,8 @@ public class ReparacionService {
     @Autowired private CitaRepository            citaRepo;
     @Autowired private PiezaRepository           piezaRepo;
     @Autowired private ReparacionPiezaRepository repPiezaRepo;
-    @Autowired private FacturaRepository         facturaRepo;   // NUEVO
+    @Autowired private FacturaRepository         facturaRepo;
+    @Autowired private NotificationService       notificationService;
 
     public List<ReparacionResponse> getAll() {
         return reparacionRepo.findAll().stream()
@@ -41,7 +42,6 @@ public class ReparacionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Reparación no encontrada")));
     }
 
-    /** Reparaciones filtradas por clienteId (seguro, sin filtrar por nombre) */
     public List<ReparacionResponse> getByCliente(Long clienteId) {
         return reparacionRepo.findByVehiculoClienteId(clienteId).stream()
                 .map(ReparacionMapper::toResponse).toList();
@@ -49,9 +49,9 @@ public class ReparacionService {
 
     @Transactional
     public ReparacionResponse crear(ReparacionRequest req) {
-        Vehiculo  v = vehiculoRepo.findById(req.getVehiculoId())
+        Vehiculo v = vehiculoRepo.findById(req.getVehiculoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Vehículo no encontrado"));
-        Mecanico  m = mecanicoRepo.findById(req.getMecanicoId())
+        Mecanico m = mecanicoRepo.findById(req.getMecanicoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Mecánico no encontrado"));
         Cita cita = req.getCitaId() != null
                 ? citaRepo.findById(req.getCitaId()).orElse(null) : null;
@@ -63,14 +63,25 @@ public class ReparacionService {
         r.setFechaInicio(LocalDate.now());
         r.setEstado("PRESENTADA");
 
-        // NUEVO: usar costeInicial si se proporciona
         if (req.getCosteInicial() != null && req.getCosteInicial().compareTo(BigDecimal.ZERO) > 0) {
             r.setCosteTotal(req.getCosteInicial());
         } else {
             r.setCosteTotal(BigDecimal.ZERO);
         }
 
-        return ReparacionMapper.toResponse(reparacionRepo.save(r));
+        r = reparacionRepo.save(r);
+
+        // Notificar al cliente que tiene una reparación nueva
+        try {
+            Usuario clienteUsuario = v.getCliente().getUsuario();
+            String vehiculo = v.getMarca() + " " + v.getModelo();
+            notificationService.notificarReparacionCambioEstado(
+                    clienteUsuario, "PRESENTADA", vehiculo);
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación: " + e.getMessage());
+        }
+
+        return ReparacionMapper.toResponse(r);
     }
 
     @Transactional
@@ -78,13 +89,12 @@ public class ReparacionService {
         Reparacion r = reparacionRepo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reparación no encontrada"));
 
-        // Validar transiciones permitidas
         String actual = r.getEstado();
         boolean valido = switch (estado) {
-            case "EN_PROCESO" -> "PRESENTADA".equals(actual);   // Cliente acepta
-            case "RECHAZADA"  -> "PRESENTADA".equals(actual);   // Cliente rechaza
-            case "TERMINADA"  -> "EN_PROCESO".equals(actual);   // Taller termina
-            case "CONFIRMADA" -> "TERMINADA".equals(actual);    // Taller confirma
+            case "EN_PROCESO" -> "PRESENTADA".equals(actual);
+            case "RECHAZADA"  -> "PRESENTADA".equals(actual);
+            case "TERMINADA"  -> "EN_PROCESO".equals(actual);
+            case "CONFIRMADA" -> "TERMINADA".equals(actual);
             default -> false;
         };
 
@@ -104,13 +114,19 @@ public class ReparacionService {
             crearFacturaAutomatica(r);
         }
 
+        // Notificar al cliente
+        try {
+            Usuario clienteUsuario = r.getVehiculo().getCliente().getUsuario();
+            String vehiculo = r.getVehiculo().getMarca() + " " + r.getVehiculo().getModelo();
+            notificationService.notificarReparacionCambioEstado(
+                    clienteUsuario, estado, vehiculo);
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación: " + e.getMessage());
+        }
+
         return ReparacionMapper.toResponse(r);
     }
 
-    /**
-     * Crea una factura automáticamente para la reparación confirmada,
-     * siempre y cuando no exista ya una factura para esa reparación.
-     */
     private void crearFacturaAutomatica(Reparacion r) {
         boolean yaExiste = facturaRepo.findAll().stream()
                 .anyMatch(f -> f.getReparacion().getId().equals(r.getId()));
@@ -127,8 +143,16 @@ public class ReparacionService {
         f.setTotal(r.getCosteTotal());
         f.setNumeroFactura(numero);
         f.setPagada(false);
-        // oficina queda null — se puede asignar al pagar
         facturaRepo.save(f);
+
+        // Notificar al cliente de la nueva factura
+        try {
+            Usuario clienteUsuario = r.getVehiculo().getCliente().getUsuario();
+            notificationService.notificarFacturaGenerada(
+                    clienteUsuario, numero, r.getCosteTotal().toPlainString());
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación de factura: " + e.getMessage());
+        }
     }
 
     @Transactional

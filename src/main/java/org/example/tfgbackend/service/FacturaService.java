@@ -21,6 +21,7 @@ public class FacturaService {
     @Autowired private ClienteRepository  clienteRepo;
     @Autowired private OficinaRepository  oficinaRepo;
     @Autowired private PuntosHistorialRepository puntosRepo;
+    @Autowired private NotificationService notificationService;
 
     public List<FacturaResponse> getAll() {
         return facturaRepo.findAll().stream().map(FacturaMapper::toResponse).toList();
@@ -31,7 +32,6 @@ public class FacturaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Factura no encontrada")));
     }
 
-    /** Facturas filtradas por clienteId (seguro) */
     public List<FacturaResponse> getByCliente(Long clienteId) {
         return facturaRepo.findByClienteId(clienteId).stream()
                 .map(FacturaMapper::toResponse).toList();
@@ -59,14 +59,24 @@ public class FacturaService {
         f.setTotal(r.getCosteTotal());
         f.setNumeroFactura(numero);
         f.setPagada(false);
-        return FacturaMapper.toResponse(facturaRepo.save(f));
+        f = facturaRepo.save(f);
+
+        // Notificar al cliente
+        try {
+            Usuario clienteUsuario = r.getVehiculo().getCliente().getUsuario();
+            notificationService.notificarFacturaGenerada(
+                    clienteUsuario, numero, r.getCosteTotal().toPlainString());
+        } catch (Exception e) {
+            System.err.println("Error notificando factura: " + e.getMessage());
+        }
+
+        return FacturaMapper.toResponse(f);
     }
 
     public List<FacturaResponse> getByClienteId(Long clienteId) {
         return facturaRepo.findByClienteId(clienteId).stream()
                 .map(FacturaMapper::toResponse).toList();
     }
-
 
     @Transactional
     public FacturaResponse marcarPagada(Long id, PagoRequest req) {
@@ -95,6 +105,16 @@ public class FacturaService {
         ph.setPuntos(puntos);
         ph.setConcepto("Pago factura " + f.getNumeroFactura());
         puntosRepo.save(ph);
+
+        // Notificar pago confirmado
+        try {
+            notificationService.notificarPagoConfirmado(
+                    cliente.getUsuario(),
+                    f.getNumeroFactura(),
+                    f.getTotal().toPlainString());
+        } catch (Exception e) {
+            System.err.println("Error notificando pago: " + e.getMessage());
+        }
 
         return FacturaMapper.toResponse(f);
     }

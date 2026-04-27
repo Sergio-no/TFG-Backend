@@ -57,13 +57,13 @@ public class ReparacionController {
         return ResponseEntity.ok(reparacionService.addPieza(id, req));
     }
 
-    /** Cliente acepta la reparación presentada (Android) */
+    // Cliente acepta la reparación presentada (Android)
     @PutMapping("/{id}/aceptar")
     public ResponseEntity<ReparacionResponse> aceptar(@PathVariable Long id) {
         return ResponseEntity.ok(reparacionService.cambiarEstado(id, "EN_PROCESO"));
     }
 
-    /** Cliente rechaza la reparación presentada (Android) */
+    // Cliente rechaza la reparación presentada (Android)
     @PutMapping("/{id}/rechazar")
     public ResponseEntity<ReparacionResponse> rechazar(@PathVariable Long id) {
         return ResponseEntity.ok(reparacionService.cambiarEstado(id, "RECHAZADA"));
