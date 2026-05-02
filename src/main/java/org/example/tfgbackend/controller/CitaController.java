@@ -28,6 +28,11 @@ public class CitaController {
         return ResponseEntity.ok(citaService.getCitasHoy());
     }
 
+    @GetMapping("/semana")
+    public ResponseEntity<List<CitaResponse>> getCitasSemana() {
+        return ResponseEntity.ok(citaService.getCitasSemana());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CitaResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(citaService.getById(id));
