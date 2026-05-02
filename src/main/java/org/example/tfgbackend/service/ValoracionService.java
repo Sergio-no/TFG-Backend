@@ -14,12 +14,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ValoracionService {
     @Autowired private ValoracionRepository  valoracionRepo;
     @Autowired private ReparacionRepository  reparacionRepo;
     @Autowired private ClienteRepository     clienteRepo;
+
+    // Estados válidos para poder valorar una reparación
+    private static final Set<String> ESTADOS_VALORABLES = Set.of("TERMINADA", "CONFIRMADA");
 
     public List<ValoracionResponse> getAll() {
         return valoracionRepo.findAll().stream().map(this::toResponse).toList();
@@ -42,9 +46,10 @@ public class ValoracionService {
         if (!reparacion.getVehiculo().getCliente().getId().equals(cliente.getId()))
             throw new IllegalArgumentException("Esta reparación no pertenece al cliente");
 
-        // Verificar que la reparación está terminada
-        if (!"TERMINADA".equals(reparacion.getEstado()))
-            throw new IllegalArgumentException("Solo se pueden valorar reparaciones terminadas");
+        // Verificar que la reparación está terminada o confirmada
+        if (!ESTADOS_VALORABLES.contains(reparacion.getEstado()))
+            throw new IllegalArgumentException(
+                    "Solo se pueden valorar reparaciones terminadas o confirmadas");
 
         // Verificar que no existe ya una valoración
         if (valoracionRepo.findAll().stream()
