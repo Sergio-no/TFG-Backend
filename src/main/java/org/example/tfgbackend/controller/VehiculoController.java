@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vehiculos")
@@ -31,7 +32,6 @@ public class VehiculoController {
         return ResponseEntity.ok(vehiculoService.getByCliente(clienteId));
     }
 
-    // ── NUEVO: buscar por matrícula ──
     @GetMapping("/matricula/{matricula}")
     public ResponseEntity<VehiculoResponse> getByMatricula(@PathVariable String matricula) {
         return ResponseEntity.ok(vehiculoService.getByMatricula(matricula));
@@ -47,5 +47,11 @@ public class VehiculoController {
             @PathVariable Long id,
             @Valid @RequestBody VehiculoRequest req) {
         return ResponseEntity.ok(vehiculoService.actualizar(id, req));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> eliminar(@PathVariable Long id) {
+        vehiculoService.eliminar(id);
+        return ResponseEntity.ok(Map.of("status", "ok", "message", "Vehículo eliminado"));
     }
 }
