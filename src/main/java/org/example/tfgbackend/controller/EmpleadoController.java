@@ -18,12 +18,12 @@ public class EmpleadoController {
 
     /**
      * Lista todos los usuarios con rol OFICINA o JEFE (empleados del taller).
+     * Incluye inactivos para poder reactivarlos desde el panel.
      */
     @GetMapping
     public ResponseEntity<List<UsuarioResponse>> getAll() {
         List<UsuarioResponse> empleados = usuarioRepo.findAll().stream()
                 .filter(u -> "OFICINA".equals(u.getRol()) || "JEFE".equals(u.getRol()))
-                .filter(Usuario::isActivo)
                 .map(UsuarioMapper::toResponse)
                 .toList();
         return ResponseEntity.ok(empleados);
@@ -51,4 +51,3 @@ public class EmpleadoController {
         return ResponseEntity.ok(UsuarioMapper.toResponse(usuarioRepo.save(u)));
     }
 }
-

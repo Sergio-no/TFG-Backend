@@ -124,4 +124,11 @@ public class CitaService {
 
         return CitaMapper.toResponse(cita);
     }
+
+    public List<CitaResponse> getCitasSemana() {
+        LocalDateTime inicio = LocalDate.now().atStartOfDay();
+        LocalDateTime fin    = inicio.plusDays(7).minusSeconds(1);
+        return citaRepo.findByFechaBetween(inicio, fin).stream()
+                .map(CitaMapper::toResponse).toList();
+    }
 }
