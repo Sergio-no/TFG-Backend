@@ -21,8 +21,14 @@ public class EstadisticasService {
     @Autowired private ValoracionRepository valoracionRepo;
     @Autowired private MecanicoRepository   mecanicoRepo;
 
-    public EstadisticasResponse getEstadisticas() {
-        LocalDateTime inicioMes = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+    public EstadisticasResponse getEstadisticas(Integer mes, Integer anio) {
+        // Si no se pasan parámetros, usar el mes actual
+        LocalDate referencia = LocalDate.now();
+        if (mes != null && anio != null) {
+            referencia = LocalDate.of(anio, mes, 1);
+        }
+
+        LocalDateTime inicioMes = referencia.withDayOfMonth(1).atStartOfDay();
         LocalDateTime finMes    = inicioMes.plusMonths(1).minusSeconds(1);
 
         BigDecimal ingresosMes = facturaRepo
@@ -30,7 +36,8 @@ public class EstadisticasService {
         if (ingresosMes == null) ingresosMes = BigDecimal.ZERO;
 
         List<Reparacion> repsMes = reparacionRepo.findAll().stream()
-                .filter(r -> !r.getFechaInicio().isBefore(inicioMes.toLocalDate()))
+                .filter(r -> !r.getFechaInicio().isBefore(inicioMes.toLocalDate())
+                        && !r.getFechaInicio().isAfter(finMes.toLocalDate()))
                 .toList();
 
         BigDecimal ticket = repsMes.isEmpty() ? BigDecimal.ZERO :
