@@ -24,6 +24,7 @@ public class ClienteService {
     public List<ClienteResponse> getAll() {
         return clienteRepo.findAll().stream()
                 .filter(c -> c.getUsuario().isActivo())
+                .filter(c -> "CLIENTE".equals(c.getUsuario().getRol()))
                 .map(UsuarioMapper::toClienteResponse).toList();
     }
 
