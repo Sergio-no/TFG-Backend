@@ -24,14 +24,15 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(s -> s
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register").permitAll()
-                        .anyRequest().permitAll()  // Mantener permitAll para no romper móvil
+                        // Rutas de administración solo para empleados/jefes
+                        .requestMatchers("/api/piezas/**", "/api/mecanicos/**", "/api/estadisticas/**").hasAnyRole("OFICINA", "JEFE")
+                        // El resto requiere estar autenticado
+                        .anyRequest().authenticated()
                 )
-                .addFilterBefore(firebaseTokenFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(firebaseTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
