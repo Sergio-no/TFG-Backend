@@ -16,6 +16,8 @@ public interface FacturaRepository extends JpaRepository<Factura, Long> {
 
     List<Factura> findByPagada(boolean pagada);
 
+    boolean existsByReparacionId(Long reparacionId);
+
     @Query("SELECT COALESCE(SUM(f.total),0) FROM Factura f " +
             "WHERE f.pagada = true AND f.fechaPago BETWEEN :inicio AND :fin")
     BigDecimal sumTotalPagadoEntreFechas(LocalDateTime inicio, LocalDateTime fin);

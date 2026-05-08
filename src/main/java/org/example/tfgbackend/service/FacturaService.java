@@ -42,8 +42,7 @@ public class FacturaService {
         Reparacion r = reparacionRepo.findById(reparacionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reparación no encontrada"));
 
-        if (facturaRepo.findAll().stream()
-                .anyMatch(f -> f.getReparacion().getId().equals(reparacionId)))
+        if (facturaRepo.existsByReparacionId(reparacionId))
             throw new IllegalStateException("Ya existe factura para esta reparación");
 
         Oficina oficina = oficinaRepo.findByUsuarioFirebaseUid(firebaseUid).orElse(null);
