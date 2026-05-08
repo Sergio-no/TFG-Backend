@@ -8,6 +8,7 @@ import org.example.tfgbackend.model.Usuario;
 import org.example.tfgbackend.repository.NotificacionRepository;
 import org.example.tfgbackend.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,6 +18,7 @@ public class NotificationService {
     @Autowired private NotificacionRepository notificacionRepo;
 
 
+    @Async
     public void enviarAUsuario(Usuario usuario, String titulo, String cuerpo, String pantalla) {
 
         //Guardar en BD (siempre, aunque no tenga token FCM)
