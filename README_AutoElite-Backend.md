@@ -1,4 +1,4 @@
-# AutoElite — Backend ⚙️
+# AutoElite — Backend 
 
 ![Java](https://img.shields.io/badge/Java%2017-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=flat-square&logo=springboot&logoColor=white)
@@ -9,21 +9,21 @@
 
 API REST en Spring Boot que da servicio a los clientes de **AutoElite**, un sistema de gestión integral para talleres mecánicos desarrollado como Proyecto de Fin de Grado (TFG) en DAM. Este backend es consumido tanto por la app Android (Kotlin + Jetpack Compose) como por el panel de administración en JavaFX.
 
-## ✨ Funcionalidades
+## Funcionalidades
 
-- 🔐 Autenticación delegada en **Firebase Auth**: verificación de ID tokens en cada petición y propagación del rol (`CLIENTE`, `OFICINA`, `JEFE`) vía custom claims
-- 📅 Gestión de citas con cálculo de franjas horarias disponibles (cada 30 min) y filtros por hoy / semana
-- 🔧 Gestión de reparaciones con máquina de estados: `PRESENTADA → EN_PROCESO / RECHAZADA → TERMINADA → CONFIRMADA`, con generación automática de factura al confirmarse
-- 🧾 Facturación con descarga en **PDF** (generado con OpenPDF) y cálculo de puntos de fidelización (1 punto por euro pagado)
-- 💳 Pagos online con **Stripe** (Payment Intents + Ephemeral Keys para el Payment Sheet de la app)
-- 🎁 CRM de fidelización: acumulación y canjeo de puntos, con histórico de movimientos
-- 🔔 Notificaciones push vía **Firebase Cloud Messaging**, con persistencia en BD y limpieza automática de tokens inválidos
-- 📦 Control de inventario de piezas con alertas de stock bajo
-- 📊 Dashboard y estadísticas mensuales: ingresos, ticket medio, valoración media, rendimiento por mecánico
-- 👥 Gestión de clientes, vehículos, mecánicos y empleados (alta, baja lógica, edición)
-- ⭐ Valoraciones de reparaciones terminadas/confirmadas
+- Autenticación delegada en **Firebase Auth**: verificación de ID tokens en cada petición y propagación del rol (`CLIENTE`, `OFICINA`, `JEFE`) vía custom claims
+- Gestión de citas con cálculo de franjas horarias disponibles (cada 30 min) y filtros por hoy / semana
+- Gestión de reparaciones con máquina de estados: `PRESENTADA → EN_PROCESO / RECHAZADA → TERMINADA → CONFIRMADA`, con generación automática de factura al confirmarse
+- Facturación con descarga en **PDF** (generado con OpenPDF) y cálculo de puntos de fidelización (1 punto por euro pagado)
+- Pagos online con **Stripe** (Payment Intents + Ephemeral Keys para el Payment Sheet de la app)
+- CRM de fidelización: acumulación y canjeo de puntos, con histórico de movimientos
+- Notificaciones push vía **Firebase Cloud Messaging**, con persistencia en BD y limpieza automática de tokens inválidos
+- Control de inventario de piezas con alertas de stock bajo
+- Dashboard y estadísticas mensuales: ingresos, ticket medio, valoración media, rendimiento por mecánico
+- Gestión de clientes, vehículos, mecánicos y empleados (alta, baja lógica, edición)
+- Valoraciones de reparaciones terminadas/confirmadas
 
-## 🧱 Stack técnico
+## Stack técnico
 
 | Categoría | Tecnología |
 |---|---|
@@ -39,7 +39,7 @@ API REST en Spring Boot que da servicio a los clientes de **AutoElite**, un sist
 
 > Nota: el `pom.xml` incluye también el driver de PostgreSQL junto al de MySQL. Si solo usas una de las dos bases de datos, vale la pena quitar la dependencia que no corresponda para que el stack quede más claro de un vistazo.
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 El proyecto sigue una arquitectura por capas clásica de Spring Boot:
 
@@ -52,11 +52,11 @@ El proyecto sigue una arquitectura por capas clásica de Spring Boot:
 - **`config`** — configuración de seguridad, CORS, Firebase y Stripe
 - **`exception`** — manejador global de excepciones (`@RestControllerAdvice`) con respuestas de error consistentes
 
-## 🔐 Seguridad
+## Seguridad
 
 Cada petición pasa por un `FirebaseTokenFilter` que valida el ID token de Firebase enviado en el header `Authorization: Bearer`, extrae el UID y el rol (custom claim) y los inyecta en el contexto de seguridad. `SecurityConfig` deja las rutas administrativas (`/api/piezas/**`, `/api/mecanicos/**`, `/api/estadisticas/**`) restringidas a los roles `OFICINA` y `JEFE`, mientras que el resto de endpoints solo exige estar autenticado. Las sesiones son **stateless** (no hay sesión de servidor) y el registro inicial (`/api/auth/register`) es la única ruta pública.
 
-## 📡 Endpoints principales
+## Endpoints principales
 
 | Base path | Descripción |
 |---|---|
@@ -76,7 +76,7 @@ Cada petición pasa por un `FirebaseTokenFilter` que valida el ID token de Fireb
 | `/api/estadisticas` | Estadísticas mensuales |
 | `/api/valoraciones` | Valoraciones de reparaciones |
 
-## 🧪 Tests
+## Tests
 
 Suite de más de 140 tests unitarios con JUnit 5 y Mockito que cubre prácticamente todos los servicios: casos felices, ausencia de recursos y fallos de concurrencia (`OptimisticLockingFailureException`) en cada operación de escritura relevante.
 
@@ -84,7 +84,7 @@ Suite de más de 140 tests unitarios con JUnit 5 y Mockito que cubre prácticame
 ./mvnw test
 ```
 
-## ⚙️ Configuración
+## Configuración
 
 Por seguridad, `application.properties` y el JSON de la cuenta de servicio de Firebase están excluidos del repositorio (`.gitignore`). Para levantar el proyecto en local, crea tu propio `src/main/resources/application.properties` con, al menos:
 
@@ -106,7 +106,7 @@ stripe.publishable-key=pk_test_xxxxxxxx
 cors.allowed-origins=http://localhost:3000,http://localhost:5173
 ```
 
-## 🚀 Instalación y ejecución
+## Instalación y ejecución
 
 ```bash
 git clone <url-de-este-repositorio>
@@ -117,7 +117,7 @@ cd TFG-Backend
 
 La API quedará disponible en `http://localhost:8080`.
 
-## 👥 Autoría
+## Autoría
 
 Proyecto de Fin de Grado — DAM, I.E.S. Laguna de Joatzel.
 
@@ -125,6 +125,6 @@ Proyecto de Fin de Grado — DAM, I.E.S. Laguna de Joatzel.
 - **Hiba Samraoui** — desarrollo del backend (parte) y app Android
 - Tutor: Alain Fernández Fernández
 
-## 📄 Licencia
+## Licencia
 
 Proyecto desarrollado con fines académicos. Sin licencia de uso comercial.
